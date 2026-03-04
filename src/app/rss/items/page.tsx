@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 import { Badge, statusBadge } from "@/components/ui/badge";
 
@@ -18,6 +18,14 @@ interface RssItem {
 }
 
 export default function RssItemsPage() {
+  return (
+    <Suspense fallback={<div className="text-neutral-500">Loading RSS items...</div>}>
+      <RssItemsContent />
+    </Suspense>
+  );
+}
+
+function RssItemsContent() {
   const searchParams = useSearchParams();
   const [items, setItems] = useState<RssItem[]>([]);
   const [loading, setLoading] = useState(true);
