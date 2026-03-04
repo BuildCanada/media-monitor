@@ -13,7 +13,8 @@
 		"deploy:all": "npm run deploy:app && npm run deploy:worker",
 		"worker:dev": "wrangler dev --config worker/wrangler.jsonc --persist-to .wrangler/state",
 		"preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-		"cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
+		"cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
+		"db:migrate": "npx tsx scripts/migrate.ts"
 	},
 	"dependencies": {
 		"@opennextjs/cloudflare": "^1.15.1",
@@ -40,6 +41,7 @@
 		"node-addon-api": "^8.5.0",
 		"node-gyp": "^12.2.0",
 		"tailwindcss": "^4",
+		"tsx": "^4.19.0",
 		"typescript": "^5.7.4",
 		"wrangler": "^4.59.3"
 	}
