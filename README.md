@@ -1,47 +1,62 @@
-# OpenNext Starter
+# Media Monitor
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Canadian media monitoring platform. Ingests RSS feeds and scrapes PressReader publications, extracts content, generates embeddings, and provides semantic search.
 
-## Getting Started
+## Architecture
 
-Read the documentation at https://opennext.js.org/cloudflare.
+Two Cloudflare Workers running from the same repo:
 
-## Develop
+| Worker | Entry Point | Purpose |
+|--------|-------------|---------|
+| `media-monitor` | `custom-worker.ts` | Next.js app (HTTP only) |
+| `media-monitor-worker` | `worker/index.ts` | Queue consumer + cron triggers |
 
-Run the Next.js development server:
+Jobs use a Rails ActiveJob-like pattern (`src/jobs/`): `performLater()` queues in production, runs inline in development.
+
+## Local Development
 
 ```bash
+# Install dependencies
+npm ci
+
+# Start Next.js dev server (jobs run inline)
 npm run dev
-# or similar package manager command
+
+# Optionally start the queue worker (for testing queue behavior)
+npm run worker:dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-## Preview
-
-Preview the application locally on the Cloudflare runtime:
-
-```bash
-npm run preview
-# or similar package manager command
-```
+Requires `.dev.vars` with `DATABASE_URL` and `TURBOPUFFER_API_KEY`, and a local PostgreSQL database.
 
 ## Deploy
 
-Deploy the application to Cloudflare:
+**CI (Cloudflare Workers Builds)** deploys the Next.js app automatically on push:
+- Build command: `npm ci && npm run build:prod`
+- Deploy command: `npm run deploy:app`
 
+**Queue worker** is deployed separately:
 ```bash
-npm run deploy
-# or similar package manager command
+npm run deploy:worker
 ```
 
-## Learn More
+**Both at once** (local only):
+```bash
+npm run deploy:all
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Secrets
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Required on both workers:
+```bash
+npx wrangler secret put DATABASE_URL
+npx wrangler secret put TURBOPUFFER_API_KEY
+npx wrangler secret put DATABASE_URL --config worker/wrangler.jsonc
+npx wrangler secret put TURBOPUFFER_API_KEY --config worker/wrangler.jsonc
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Cron Schedules
+
+| Schedule | Job |
+|----------|-----|
+| `*/5 * * * *` | RSS feed ingest |
+| `0 6 * * *` | PressReader daily scrape |
