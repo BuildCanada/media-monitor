@@ -44,9 +44,11 @@
     "binding": "AI"
   },
 
-  // Daily scrape + RSS ingest at 6AM UTC (11PM MST)
   "triggers": {
-    "crons": ["0 6 * * *"]
+    "crons": [
+      "*/5 * * * *",  // RSS ingest every 5 minutes
+      "0 6 * * *"     // Daily PressReader scrape at 6AM UTC (11PM MST)
+    ]
   },
 
   "observability": {

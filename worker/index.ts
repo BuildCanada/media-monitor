@@ -63,13 +63,18 @@ export default {
     env: Env,
     ctx: ExecutionContext,
   ): Promise<void> {
+    const jobEnv = buildJobEnv(env);
+
     switch (controller.cron) {
+      case "*/5 * * * *": {
+        // RSS ingest every 5 minutes
+        console.log("[cron] RSS ingest:", new Date(controller.scheduledTime).toISOString());
+        await runRssIngest(jobEnv.db, jobEnv);
+        break;
+      }
       case "0 6 * * *": {
-        console.log("[cron] Starting daily jobs:", new Date(controller.scheduledTime).toISOString());
-
-        const jobEnv = buildJobEnv(env);
-
-        // PressReader scrape
+        // Daily PressReader scrape
+        console.log("[cron] Daily scrape:", new Date(controller.scheduledTime).toISOString());
         const token = await getValidToken(jobEnv.db);
         if (token) {
           const client = new PressReaderClient(token, new RateLimiter());
@@ -77,10 +82,6 @@ export default {
         } else {
           console.error("[cron] No valid auth token. Skipping PressReader scrape.");
         }
-
-        // RSS ingest
-        await runRssIngest(jobEnv.db, jobEnv);
-
         break;
       }
       default:
