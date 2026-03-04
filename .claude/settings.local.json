@@ -1,7 +1,21 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(git:*)",
+      "WebSearch",
+      "Bash(tail:*)",
+      "Bash(/usr/bin/curl:*)",
+      "Bash(do echo:*)",
+      "WebFetch(domain:defuddle.md)",
+      "WebFetch(domain:turbopuffer.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(wc:*)",
+      "WebFetch(domain:developers.cloudflare.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

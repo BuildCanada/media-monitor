@@ -1,0 +1,44 @@
+{
+  // Standalone worker for queue consumers and cron triggers.
+  // The Next.js app runs separately via `next dev`.
+  "name": "media-monitor-worker",
+  "account_id": "af43b5869a980d4edc6c18f15cd7aa2d",
+  "main": "index.ts",
+  "compatibility_date": "2025-01-15",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // R2 bucket for article images
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "media-monitor-images"
+    }
+  ],
+
+  // Single unified task queue
+  "queues": {
+    "producers": [
+      {
+        "queue": "media-monitor-tasks",
+        "binding": "TASK_QUEUE"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "media-monitor-tasks",
+        "max_batch_size": 1,
+        "max_retries": 3
+      }
+    ]
+  },
+
+  // Workers AI binding for embeddings
+  "ai": {
+    "binding": "AI"
+  },
+
+  // Daily scrape + RSS ingest at 6AM UTC (11PM MST)
+  "triggers": {
+    "crons": ["0 6 * * *"]
+  }
+}

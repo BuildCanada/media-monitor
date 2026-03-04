@@ -1,0 +1,10 @@
+outlet_name,website_url,category,coverage_scope,language,owner_network,type,reason_no_rss,notes
+CTV News,https://www.ctvnews.ca,General News,National,English,Bell Media,Private Broadcaster,"RSS feeds discontinued — legacy URLs return 404","Canada's most-watched news network; previously had RSS but Bell Media removed support"
+CP24,https://www.cp24.com,General News / Breaking,Toronto / GTA,English,Bell Media,Private Broadcaster,"No RSS feed found; part of Bell Media network which dropped RSS","24-hour Toronto local news channel; sister station to CTV"
+The Canadian Press,https://www.thecanadianpress.com,Wire Service,National,English / French,Independent,Wire Service,"No public RSS feed — wire content distributed through subscribers","Canada's national news agency; content appears in other outlets but no direct public feed"
+APTN News,https://www.aptnnews.ca,Indigenous News,National,English / Indigenous languages,APTN,Broadcaster,"No RSS feed found","Aboriginal Peoples Television Network — Indigenous-focused national news"
+blogTO,https://www.blogto.com,Lifestyle / Local News,Toronto,English,Independent,Digital News,"RSS feed URLs return 404 — appears discontinued","Toronto urban lifestyle and local news site"
+Le Devoir,https://www.ledevoir.com,General News,Quebec / National,French,Independent,Newspaper,"No public RSS feed found — content behind paywall","Independent French-language Quebec daily with strong editorial voice"
+Halifax Chronicle Herald,https://www.thechronicleherald.ca,General News,Nova Scotia / Atlantic,English,SaltWire Network,Newspaper,"No working public RSS feed found","Atlantic Canada's largest daily newspaper"
+Capital Daily,https://www.capitaldaily.ca,Local News,Victoria / Vancouver Island,English,Independent,Digital News,"No RSS feed found","Victoria-focused local news startup with daily newsletter model"
+Canadian Dimension,https://canadiandimension.com,Politics / Left,National,English,Independent,Magazine,"No working RSS feed found","Left-wing magazine covering Canadian politics and labour since 1963"

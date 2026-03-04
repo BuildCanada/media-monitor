@@ -1,0 +1,25 @@
+{
+  "name": "Media Monitor",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss"
+      ],
+      "settings": {
+        "files.associations": {
+          "wrangler.json": "jsonc"
+        }
+      }
+    }
+  },
+  "containerEnv": {
+    "DATABASE_URL": "postgresql://postgres:postgres@db:5432/media_monitor"
+  },
+  "forwardPorts": [3000, 5432]
+}

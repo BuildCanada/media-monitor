@@ -1,0 +1,37 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspace:cached
+      - node_modules:/workspace/node_modules
+      - bash_history:/home/node/.bash_history_dir
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/media_monitor
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sleep infinity
+
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: media_monitor
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  node_modules:
+  pgdata:
+  bash_history:
