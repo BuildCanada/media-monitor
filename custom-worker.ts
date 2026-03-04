@@ -12,7 +12,7 @@ function buildJobEnv(env: CloudflareEnv): JobEnv {
   const queue = (env as unknown as Record<string, Queue>).TASK_QUEUE;
   const ai = (env as unknown as Record<string, unknown>).AI;
   const turbopufferApiKey = (env as unknown as Record<string, string>).TURBOPUFFER_API_KEY;
-  const images = (env as unknown as Record<string, R2Bucket>).IMAGES;
+  const images = (env as unknown as Record<string, R2Bucket>).PUBLIC_BUCKET;
 
   let glinerContainer: any = null;
   const glinerBinding = (env as unknown as Record<string, DurableObjectNamespace | undefined>).GLINER_CONTAINER;

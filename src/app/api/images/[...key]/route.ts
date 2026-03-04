@@ -9,7 +9,7 @@ export async function GET(
   const r2Key = key.join("/");
 
   const { env } = await getCloudflareContext();
-  const r2 = (env as unknown as Record<string, R2Bucket>).IMAGES;
+  const r2 = (env as unknown as Record<string, R2Bucket>).PUBLIC_BUCKET;
 
   if (!r2) {
     return NextResponse.json({ error: "R2 not configured" }, { status: 500 });

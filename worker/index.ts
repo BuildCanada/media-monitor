@@ -15,7 +15,7 @@ interface Env {
   DATABASE_URL: string;
   TURBOPUFFER_API_KEY: string;
   TASK_QUEUE: Queue;
-  IMAGES: R2Bucket;
+  PUBLIC_BUCKET: R2Bucket;
   AI: Ai;
   GLINER_CONTAINER?: DurableObjectNamespace;
 }
@@ -35,7 +35,7 @@ function buildJobEnv(env: Env): JobEnv {
     ai: env.AI,
     turbopufferApiKey: env.TURBOPUFFER_API_KEY,
     glinerContainer,
-    images: env.IMAGES,
+    images: env.PUBLIC_BUCKET,
   };
 }
 

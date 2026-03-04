@@ -32,7 +32,7 @@ export async function getApiJobEnv(): Promise<JobEnv> {
     ai: cfEnv.AI,
     turbopufferApiKey: cfEnv.TURBOPUFFER_API_KEY as string | undefined,
     glinerContainer,
-    images: cfEnv.IMAGES as R2Bucket | undefined,
+    images: cfEnv.PUBLIC_BUCKET as R2Bucket | undefined,
   };
 }
 

@@ -4,14 +4,18 @@
   "name": "media-monitor-worker",
   "account_id": "af43b5869a980d4edc6c18f15cd7aa2d",
   "main": "index.ts",
-  "compatibility_date": "2025-01-15",
+  "compatibility_date": "2026-03-04",
   "compatibility_flags": ["nodejs_compat"],
 
-  // R2 bucket for article images
+  // R2 buckets
   "r2_buckets": [
     {
-      "binding": "IMAGES",
-      "bucket_name": "media-monitor-images"
+      "binding": "PUBLIC_BUCKET",
+      "bucket_name": "buildcanada-prod-media-monitor"
+    },
+    {
+      "binding": "PRIVATE_BUCKET",
+      "bucket_name": "buildcanada-prod-media-monitor-private"
     }
   ],
 
@@ -28,6 +32,9 @@
         "queue": "media-monitor-tasks",
         "max_batch_size": 1,
         "max_retries": 3
+      },
+      {
+        "queue": "media-monitor-notifications"
       }
     ]
   },
@@ -40,5 +47,9 @@
   // Daily scrape + RSS ingest at 6AM UTC (11PM MST)
   "triggers": {
     "crons": ["0 6 * * *"]
+  },
+
+  "observability": {
+    "enabled": true
   }
 }

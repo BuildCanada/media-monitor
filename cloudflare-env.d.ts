@@ -6,7 +6,8 @@ declare namespace Cloudflare {
 		mainModule: typeof import("./custom-worker");
 	}
 	interface Env {
-		IMAGES: R2Bucket;
+		PUBLIC_BUCKET: R2Bucket;
+		PRIVATE_BUCKET: R2Bucket;
 		SCRAPE_QUEUE: Queue;
 		RSS_PROCESS_QUEUE: Queue;
 		AI: Ai;
