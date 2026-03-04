@@ -1,6 +1,3 @@
-CREATE SCHEMA "media_monitor";
---> statement-breakpoint
-CREATE SCHEMA "media_monitor_private";
 --> statement-breakpoint
 CREATE TABLE "media_monitor"."article_authors" (
 	"id" serial PRIMARY KEY NOT NULL,
