@@ -11,14 +11,15 @@ async function main() {
   const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
   const originalQuery = pool.query.bind(pool);
-  pool.query = function (...args: any[]) {
-    const sql = typeof args[0] === "string" ? args[0] : args[0]?.text;
+  // @ts-expect-error — patching overloaded method signature
+  pool.query = function (...args: unknown[]) {
+    const sql = typeof args[0] === "string" ? args[0] : (args[0] as any)?.text;
     if (typeof sql === "string" && /^CREATE SCHEMA/i.test(sql)) {
       console.log("[migrate] Skipping:", sql.trim());
       return Promise.resolve({ rows: [], rowCount: 0 });
     }
-    return originalQuery(...args);
-  } as typeof pool.query;
+    return (originalQuery as Function).apply(null, args);
+  };
 
   const db = drizzle(pool);
 
