@@ -7,25 +7,31 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import pg from "pg";
 
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+async function main() {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
-// Intercept CREATE SCHEMA queries — they fail on locked-down Postgres users
-const originalQuery = pool.query.bind(pool);
-pool.query = function (...args: any[]) {
-  const sql = typeof args[0] === "string" ? args[0] : args[0]?.text;
-  if (typeof sql === "string" && /^CREATE SCHEMA/i.test(sql)) {
-    console.log("[migrate] Skipping:", sql);
-    return Promise.resolve({ rows: [], rowCount: 0 });
-  }
-  return originalQuery(...args);
-} as typeof pool.query;
+  const originalQuery = pool.query.bind(pool);
+  pool.query = function (...args: any[]) {
+    const sql = typeof args[0] === "string" ? args[0] : args[0]?.text;
+    if (typeof sql === "string" && /^CREATE SCHEMA/i.test(sql)) {
+      console.log("[migrate] Skipping:", sql.trim());
+      return Promise.resolve({ rows: [], rowCount: 0 });
+    }
+    return originalQuery(...args);
+  } as typeof pool.query;
 
-const db = drizzle(pool);
+  const db = drizzle(pool);
 
-await migrate(db, {
-  migrationsFolder: "./drizzle",
-  migrationsSchema: "media_monitor_private",
+  await migrate(db, {
+    migrationsFolder: "./drizzle",
+    migrationsSchema: "media_monitor_private",
+  });
+
+  await pool.end();
+  console.log("[migrate] Done");
+}
+
+main().catch((err) => {
+  console.error("[migrate] Failed:", err);
+  process.exit(1);
 });
-
-await pool.end();
-console.log("[migrate] Done");
