@@ -14,6 +14,7 @@ import { runRssIngest } from "../src/lib/rss";
 interface Env {
   DATABASE_URL: string;
   TURBOPUFFER_API_KEY: string;
+  TURBOPUFFER_NAMESPACE: string;
   TASK_QUEUE: Queue;
   PUBLIC_BUCKET: R2Bucket;
   AI: Ai;
@@ -34,6 +35,7 @@ function buildJobEnv(env: Env): JobEnv {
     queue: env.TASK_QUEUE,
     ai: env.AI,
     turbopufferApiKey: env.TURBOPUFFER_API_KEY,
+    turbopufferNamespace: env.TURBOPUFFER_NAMESPACE,
     glinerContainer,
     images: env.PUBLIC_BUCKET,
   };

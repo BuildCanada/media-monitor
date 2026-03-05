@@ -51,6 +51,7 @@ export default function RssPage() {
   const [triggering, setTriggering] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [reprocessing, setReprocessing] = useState(false);
   const [processResult, setProcessResult] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -101,6 +102,16 @@ export default function RssPage() {
     setProcessing(false);
   }
 
+  async function handleReprocess() {
+    if (!confirm("This will re-process all completed and failed items. Continue?")) return;
+    setReprocessing(true);
+    setProcessResult(null);
+    const res = await fetch("/api/rss/reprocess", { method: "POST" });
+    const data: { queued?: number; error?: string } = await res.json();
+    setProcessResult(data.queued != null ? `${data.queued} items queued for reprocessing` : data.error || "Failed");
+    setReprocessing(false);
+  }
+
   if (loading) {
     return <div className="text-neutral-500">Loading RSS data...</div>;
   }
@@ -124,6 +135,13 @@ export default function RssPage() {
             className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
           >
             {seeding ? "Seeding..." : "Seed Feeds"}
+          </button>
+          <button
+            onClick={handleReprocess}
+            disabled={reprocessing}
+            className="rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
+          >
+            {reprocessing ? "Reprocessing..." : "Reprocess All"}
           </button>
           <button
             onClick={handleProcess}

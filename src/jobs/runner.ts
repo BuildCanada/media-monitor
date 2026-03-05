@@ -8,6 +8,7 @@ export interface JobEnv {
   queue?: Queue;
   ai?: unknown;
   turbopufferApiKey?: string;
+  turbopufferNamespace?: string;
   glinerContainer?: unknown;
   images?: R2Bucket;
 }
@@ -31,6 +32,7 @@ export async function getApiJobEnv(): Promise<JobEnv> {
     queue: cfEnv.TASK_QUEUE as Queue | undefined,
     ai: cfEnv.AI,
     turbopufferApiKey: cfEnv.TURBOPUFFER_API_KEY as string | undefined,
+    turbopufferNamespace: cfEnv.TURBOPUFFER_NAMESPACE as string | undefined,
     glinerContainer,
     images: cfEnv.PUBLIC_BUCKET as R2Bucket | undefined,
   };

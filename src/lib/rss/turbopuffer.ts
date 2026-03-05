@@ -1,7 +1,5 @@
 import { Turbopuffer } from "@turbopuffer/turbopuffer";
 
-const NAMESPACE = "media-monitor-articles";
-
 export interface ArticleChunkVector {
   rssItemId: number;
   chunkSeq: number;
@@ -59,10 +57,11 @@ function getClient(apiKey: string) {
 
 export async function upsertChunks(
   apiKey: string,
+  namespace: string,
   chunks: ArticleChunkVector[],
 ): Promise<void> {
   const client = getClient(apiKey);
-  const ns = client.namespace(NAMESPACE);
+  const ns = client.namespace(namespace);
 
   await ns.write({
     distance_metric: "cosine_distance",
@@ -85,18 +84,23 @@ export async function upsertChunks(
     },
     schema: {
       chunk_text: { type: "string", full_text_search: true },
+      author: { type: "string", full_text_search: true },
+      title: { type: "string", full_text_search: true },
+      publication: { type: "string", full_text_search: true },
     },
   });
 }
 
 export async function searchArticles(
   apiKey: string,
+  namespace: string,
   options: SearchOptions,
 ): Promise<SearchResult[]> {
   const client = getClient(apiKey);
-  const ns = client.namespace(NAMESPACE);
+  const ns = client.namespace(namespace);
 
   const limit = options.limit || 20;
+  const fetchK = limit * 3; // Fetch extra for dedup
 
   // Build filters
   type FilterExpr = [string, string, unknown];
@@ -115,44 +119,82 @@ export async function searchArticles(
     filterExprs.push([attrKey, "ContainsAny", [options.filters.entityValue]]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const queryParams: Record<string, any> = {
-    top_k: limit * 3, // Fetch extra for dedup
-    include_attributes: [
-      "title", "author", "publication", "pub_date", "category",
-      "article_url", "rss_item_id", "chunk_seq", "chunk_text",
-      "entities_people", "entities_organizations", "entities_locations", "entities_topics",
-    ],
-  };
-
-  if (filterExprs.length > 0) {
-    queryParams.filters = filterExprs.length === 1
+  const filters = filterExprs.length === 0
+    ? undefined
+    : filterExprs.length === 1
       ? filterExprs[0]
       : ["And", ...filterExprs];
+
+  const includeAttributes = [
+    "title", "author", "publication", "pub_date", "category",
+    "article_url", "rss_item_id", "chunk_seq", "chunk_text",
+    "entities_people", "entities_organizations", "entities_locations", "entities_topics",
+  ];
+
+  let rows: Record<string, unknown>[];
+
+  if (options.mode === "hybrid" && options.queryVector && options.query) {
+    // Hybrid: run vector + BM25 as separate queries, fuse with reciprocal rank fusion
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const baseQuery: Record<string, any> = {
+      top_k: fetchK,
+      include_attributes: includeAttributes,
+      ...(filters ? { filters } : {}),
+    };
+
+    const response = await ns.multiQuery({
+      queries: [
+        { ...baseQuery, rank_by: ["vector", "ANN", options.queryVector] },
+        { ...baseQuery, rank_by: ["chunk_text", "BM25", options.query] },
+      ],
+    });
+
+    const vectorRows = response.results[0].rows || [];
+    const bm25Rows = response.results[1].rows || [];
+
+    // Reciprocal rank fusion (k=60)
+    const K = 60;
+    const scores = new Map<string, number>();
+    const rowMap = new Map<string, Record<string, unknown>>();
+
+    for (const [rank, row] of vectorRows.entries()) {
+      const id = row.id as string;
+      scores.set(id, (scores.get(id) || 0) + 1 / (K + rank + 1));
+      rowMap.set(id, row);
+    }
+    for (const [rank, row] of bm25Rows.entries()) {
+      const id = row.id as string;
+      scores.set(id, (scores.get(id) || 0) + 1 / (K + rank + 1));
+      rowMap.set(id, row);
+    }
+
+    rows = Array.from(rowMap.entries())
+      .map(([id, row]) => ({ ...row, $dist: scores.get(id) || 0 }))
+      .sort((a, b) => (b.$dist as number) - (a.$dist as number));
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const queryParams: Record<string, any> = {
+      top_k: fetchK,
+      include_attributes: includeAttributes,
+      ...(filters ? { filters } : {}),
+    };
+
+    if (options.mode === "semantic" && options.queryVector) {
+      queryParams.rank_by = ["vector", "ANN", options.queryVector];
+    } else if (options.mode === "keyword" && options.query) {
+      queryParams.rank_by = ["chunk_text", "BM25", options.query];
+    }
+
+    const response = await ns.query(queryParams);
+    rows = response.rows || [];
   }
-
-  if (options.mode === "semantic" && options.queryVector) {
-    queryParams.rank_by = ["CosineSimilarity", "vector", options.queryVector];
-  } else if (options.mode === "keyword" && options.query) {
-    queryParams.rank_by = ["BM25", "chunk_text", options.query];
-  } else if (options.mode === "hybrid" && options.queryVector && options.query) {
-    queryParams.rank_by = [
-      "Sum",
-      ["CosineSimilarity", "vector", options.queryVector],
-      ["*", 0.5, ["BM25", "chunk_text", options.query]],
-    ];
-  }
-
-  const response = await ns.query(queryParams);
-
-  const rows = response.rows || [];
 
   // Deduplicate by rss_item_id — keep best-scoring chunk per article
   const bestByArticle = new Map<number, SearchResult>();
 
   for (const row of rows) {
     const rssItemId = row.rss_item_id as number;
-    const score = row.$dist ?? 0;
+    const score = (row.$dist as number) ?? 0;
 
     if (!bestByArticle.has(rssItemId) || score > bestByArticle.get(rssItemId)!.score) {
       bestByArticle.set(rssItemId, {

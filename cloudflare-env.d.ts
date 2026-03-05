@@ -13,6 +13,7 @@ declare namespace Cloudflare {
 		AI: Ai;
 		GLINER_CONTAINER: DurableObjectNamespace;
 		TURBOPUFFER_API_KEY: string;
+		TURBOPUFFER_NAMESPACE: string;
 		ASSETS: Fetcher;
 	}
 }

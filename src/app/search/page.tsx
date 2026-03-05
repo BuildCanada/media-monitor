@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { EntityBadges } from "@/components/ui/entity-badges";
 
@@ -31,9 +31,20 @@ export default function SearchPage() {
   const [searched, setSearched] = useState(false);
 
   // Filters
+  const [publications, setPublications] = useState<string[]>([]);
   const [publication, setPublication] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+
+  useEffect(() => {
+    fetch("/api/rss/feeds")
+      .then((res) => res.json())
+      .then((feeds: unknown) => {
+        const items = feeds as { publicationName: string }[];
+        const names = [...new Set(items.map((f) => f.publicationName))].sort();
+        setPublications(names);
+      });
+  }, []);
 
   const handleSearch = useCallback(async () => {
     if (!query.trim()) return;
@@ -120,8 +131,9 @@ export default function SearchPage() {
               className="mt-1 w-full rounded-md border border-neutral-300 px-2 py-1.5 text-sm dark:border-neutral-700 dark:bg-neutral-900"
             >
               <option value="">All</option>
-              <option value="National Post">National Post</option>
-              <option value="Globe and Mail">Globe and Mail</option>
+              {publications.map((name) => (
+                <option key={name} value={name}>{name}</option>
+              ))}
             </select>
           </div>
           <div>

@@ -138,7 +138,7 @@ export const RssProcessJob: Job<{ rssItemId: number; jobId: number }> = {
         entitiesTopics: topics,
       }));
 
-      await upsertChunks(env.turbopufferApiKey!, vectorChunks);
+      await upsertChunks(env.turbopufferApiKey!, env.turbopufferNamespace!, vectorChunks);
 
       // Step 8: Mark completed
       await db
