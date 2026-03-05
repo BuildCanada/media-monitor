@@ -15,7 +15,7 @@ export async function embedTexts(
 
   for (let i = 0; i < texts.length; i += BATCH_SIZE) {
     const batch = texts.slice(i, i + BATCH_SIZE);
-    const result = await ai.run("@cf/baai/bge-base-en-v1.5", { text: batch });
+    const result = await ai.run("@cf/baai/bge-m3", { text: batch });
 
     // Workers AI returns { data: [number[]] } — each element is the embedding directly
     const data = result.data as unknown[];

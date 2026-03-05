@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   // Embed query for vector search modes
   let queryVector: number[] | undefined;
   if (mode === "hybrid" || mode === "semantic") {
-    const result = await ai.run("@cf/baai/bge-base-en-v1.5", { text: [query] });
+    const result = await ai.run("@cf/baai/bge-m3", { text: [query] });
     const raw = result.data[0];
     queryVector = Array.isArray(raw) ? raw : Array.from(raw.values);
   }

@@ -40,7 +40,7 @@ Ingests articles from National Post and Globe and Mail RSS feeds.
 3. **Task processor** per item:
    - Extracts content via defuddle.md
    - Chunks markdown (~900 tokens, 15% overlap)
-   - Embeds chunks via Workers AI (bge-base-en-v1.5, 768 dims)
+   - Embeds chunks via Workers AI (bge-m3, 1024 dims)
    - Extracts entities via GLiNER2 container (people, orgs, locations, topics)
    - Upserts chunks + embeddings + entities to Turbopuffer
    - Saves entities to PostgreSQL
@@ -86,7 +86,7 @@ Hybrid search across all RSS-indexed articles via Turbopuffer:
 | Backend | Cloudflare Workers, OpenNext adapter |
 | Database | PostgreSQL (Drizzle ORM) |
 | Vector DB | Turbopuffer (hybrid BM25 + vector) |
-| Embeddings | Cloudflare Workers AI (bge-base-en-v1.5) |
+| Embeddings | Cloudflare Workers AI (bge-m3) |
 | NER | GLiNER2 (Cloudflare Containers) |
 | Content extraction | defuddle.md |
 | RSS parsing | fast-xml-parser |

@@ -45,8 +45,8 @@ QMD-inspired markdown-aware chunking:
 
 ### 4. Embedding (`src/lib/rss/embedder.ts`)
 
-- Model: `@cf/baai/bge-base-en-v1.5` via Cloudflare Workers AI
-- Output: 768-dimensional vectors
+- Model: `@cf/baai/bge-m3` via Cloudflare Workers AI
+- Output: 1024-dimensional vectors
 - Batches up to 100 chunks per API call
 
 ### 5. Entity Extraction (`src/lib/rss/entity-extractor.ts`)
@@ -64,7 +64,7 @@ Calls the GLiNER2 container (Cloudflare Containers via Durable Object):
 Each chunk is upserted to Turbopuffer namespace `media-monitor-articles`:
 
 - **ID**: `rss-{itemId}-chunk-{seq}`
-- **Vector**: 768-dim embedding
+- **Vector**: 1024-dim embedding
 - **Attributes**: title, author, publication, pub_date, category, article_url, chunk_text (BM25-indexed), entity arrays
 
 ## Processing States
