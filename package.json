@@ -7,7 +7,7 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "next lint",
-		"build:prod": "opennextjs-cloudflare build && node scripts/patch-pg-cloudflare.js",
+		"build:prod": "opennextjs-cloudflare build",
 		"deploy:app": "wrangler deploy",
 		"deploy:worker": "wrangler deploy --config worker/wrangler.jsonc",
 		"deploy:all": "npm run deploy:app && npm run deploy:worker",
