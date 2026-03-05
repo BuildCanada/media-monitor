@@ -11,8 +11,18 @@ import { fetchFeed } from "./feed-fetcher";
 export async function runRssIngest(
   db: Db,
   env: JobEnv,
-): Promise<{ jobId: number; newItems: number }> {
+): Promise<{ jobId: number; newItems: number } | null> {
   console.log("[rss-orchestrator] Starting RSS ingest...");
+
+  const enabledFeeds = await db
+    .select()
+    .from(rssFeeds)
+    .where(eq(rssFeeds.enabled, true));
+
+  if (enabledFeeds.length === 0) {
+    console.log("[rss-orchestrator] No enabled feeds, skipping.");
+    return null;
+  }
 
   const [job] = await db
     .insert(rssIngestJobs)
@@ -20,11 +30,6 @@ export async function runRssIngest(
     .returning();
 
   try {
-    const enabledFeeds = await db
-      .select()
-      .from(rssFeeds)
-      .where(eq(rssFeeds.enabled, true));
-
     let feedsFetched = 0;
     let totalNewItems = 0;
 
