@@ -6,7 +6,7 @@ import type { NextConfig } from "next";
 initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
-	/* config options here */
+	serverExternalPackages: ["pg"],
 };
 
 export default nextConfig;
