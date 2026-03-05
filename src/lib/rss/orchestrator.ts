@@ -29,10 +29,11 @@ export async function runRssIngest(
     .values({ status: "running", startedAt: new Date() })
     .returning();
 
-  try {
-    let feedsFetched = 0;
-    let totalNewItems = 0;
+  let feedsFetched = 0;
+  let totalNewItems = 0;
+  let jobError: string | undefined;
 
+  try {
     for (const feed of enabledFeeds) {
       console.log(`[rss-orchestrator] Fetching ${feed.publicationName} - ${feed.category || "main"} (${feed.feedUrl})`);
 
@@ -77,37 +78,40 @@ export async function runRssIngest(
         }
       } catch (error) {
         console.error(`[rss-orchestrator] Error fetching feed ${feed.feedUrl}:`, error);
-        await db
-          .update(rssFeeds)
-          .set({ lastFetchError: error instanceof Error ? error.message : String(error) })
-          .where(eq(rssFeeds.id, feed.id));
+        try {
+          await db
+            .update(rssFeeds)
+            .set({ lastFetchError: error instanceof Error ? error.message : String(error) })
+            .where(eq(rssFeeds.id, feed.id));
+        } catch (updateError) {
+          console.error(`[rss-orchestrator] Failed to record feed error:`, updateError);
+        }
       }
     }
-
-    await db
-      .update(rssIngestJobs)
-      .set({
-        status: "completed",
-        feedsFetched,
-        newItems: totalNewItems,
-        completedAt: new Date(),
-      })
-      .where(eq(rssIngestJobs.id, job.id));
-
-    console.log(
-      `[rss-orchestrator] Ingest complete: ${feedsFetched} feeds, ${totalNewItems} new items`,
-    );
-
-    return { jobId: job.id, newItems: totalNewItems };
   } catch (error) {
-    await db
-      .update(rssIngestJobs)
-      .set({
-        status: "failed",
-        completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : String(error),
-      })
-      .where(eq(rssIngestJobs.id, job.id));
-    throw error;
+    jobError = error instanceof Error ? error.message : String(error);
+    console.error(`[rss-orchestrator] Ingest failed:`, error);
+  } finally {
+    try {
+      await db
+        .update(rssIngestJobs)
+        .set({
+          status: jobError ? "failed" : "completed",
+          feedsFetched,
+          newItems: totalNewItems,
+          completedAt: new Date(),
+          ...(jobError ? { errorMessage: jobError } : {}),
+        })
+        .where(eq(rssIngestJobs.id, job.id));
+    } catch (updateError) {
+      console.error(`[rss-orchestrator] Failed to update job status:`, updateError);
+    }
   }
+
+  console.log(
+    `[rss-orchestrator] Ingest complete: ${feedsFetched} feeds, ${totalNewItems} new items`,
+  );
+
+  if (jobError) throw new Error(jobError);
+  return { jobId: job.id, newItems: totalNewItems };
 }
