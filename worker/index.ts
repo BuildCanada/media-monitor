@@ -7,7 +7,7 @@
 import { getDb } from "../src/db";
 import type { JobEnv } from "../src/jobs";
 import { performFromMessage } from "../src/jobs";
-import { runRssIngest } from "../src/lib/rss";
+import { retryFailedItems, runRssIngest } from "../src/lib/rss";
 
 interface Env {
   DATABASE_URL: string;
@@ -70,6 +70,12 @@ export default {
         // RSS ingest every 5 minutes
         console.log("[cron] RSS ingest:", new Date(controller.scheduledTime).toISOString());
         await runRssIngest(jobEnv.db, jobEnv);
+        break;
+      }
+      case "0 * * * *": {
+        // Retry failed extractions every hour
+        console.log("[cron] Retry failed items:", new Date(controller.scheduledTime).toISOString());
+        await retryFailedItems(jobEnv.db, jobEnv);
         break;
       }
       default:

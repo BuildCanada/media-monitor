@@ -1,0 +1,1 @@
+ALTER TABLE "media_monitor_private"."rss_items" ADD COLUMN "retry_count" integer DEFAULT 0 NOT NULL;

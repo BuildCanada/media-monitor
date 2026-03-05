@@ -26,6 +26,7 @@ export const rssItems = mediaMonitorPrivate.table("rss_items", {
   processingStatus: varchar("processing_status", { length: 16 })
     .notNull()
     .default("pending"), // pending | extracting | embedding | completed | failed
+  retryCount: integer("retry_count").notNull().default(0),
   processingError: text("processing_error"),
   processedAt: timestamp("processed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

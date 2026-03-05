@@ -1,4 +1,4 @@
-import { eq, or } from "drizzle-orm";
+import { and, eq, lt, or } from "drizzle-orm";
 
 import type { Db } from "@/db";
 import { rssFeeds, rssIngestJobs, rssItems } from "@/db/schema/private";
@@ -7,6 +7,46 @@ import { performLater } from "@/jobs";
 import { RssProcessJob } from "@/jobs/rss-process.job";
 
 import { fetchFeed } from "./feed-fetcher";
+
+const MAX_RETRIES = 3;
+
+export async function retryFailedItems(
+  db: Db,
+  env: JobEnv,
+): Promise<{ retried: number }> {
+  const failedItems = await db
+    .select({ id: rssItems.id, retryCount: rssItems.retryCount })
+    .from(rssItems)
+    .where(
+      and(
+        eq(rssItems.processingStatus, "failed"),
+        lt(rssItems.retryCount, MAX_RETRIES),
+      ),
+    );
+
+  if (failedItems.length === 0) {
+    console.log("[rss-retry] No failed items eligible for retry.");
+    return { retried: 0 };
+  }
+
+  console.log(`[rss-retry] Retrying ${failedItems.length} failed items...`);
+
+  for (const item of failedItems) {
+    await db
+      .update(rssItems)
+      .set({
+        processingStatus: "pending",
+        processingError: null,
+        retryCount: item.retryCount + 1,
+      })
+      .where(eq(rssItems.id, item.id));
+
+    await performLater(env, RssProcessJob, { rssItemId: item.id, jobId: 0 });
+  }
+
+  console.log(`[rss-retry] Queued ${failedItems.length} items for retry.`);
+  return { retried: failedItems.length };
+}
 
 export async function runRssIngest(
   db: Db,
