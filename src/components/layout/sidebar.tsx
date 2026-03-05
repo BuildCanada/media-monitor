@@ -4,11 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
-  { href: "/publications", label: "Publications" },
-  { href: "/scrape", label: "Scrape Jobs" },
   { href: "/rss", label: "RSS Feeds" },
   { href: "/search", label: "Search" },
-  { href: "/settings", label: "Settings" },
 ];
 
 export function Sidebar() {

@@ -24,7 +24,6 @@ export async function GET(
   const results = await db
     .select({
       id: articles.id,
-      pressreaderId: articles.pressreaderId,
       title: articles.title,
       subtitle: articles.subtitle,
       byline: articles.byline,

@@ -2,4 +2,3 @@
 export { getApiJobEnv, performFromMessage, performLater } from "./runner";
 export type { Job, JobEnv } from "./runner";
 export { RssProcessJob } from "./rss-process.job";
-export { ScrapeIssueJob } from "./scrape-issue.job";

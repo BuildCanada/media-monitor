@@ -7,8 +7,6 @@
 import { getDb } from "../src/db";
 import type { JobEnv } from "../src/jobs";
 import { performFromMessage } from "../src/jobs";
-import { getValidToken, PressReaderClient, RateLimiter } from "../src/lib/pressreader";
-import { runDailyScrape } from "../src/lib/scraper";
 import { runRssIngest } from "../src/lib/rss";
 
 interface Env {
@@ -72,18 +70,6 @@ export default {
         // RSS ingest every 5 minutes
         console.log("[cron] RSS ingest:", new Date(controller.scheduledTime).toISOString());
         await runRssIngest(jobEnv.db, jobEnv);
-        break;
-      }
-      case "0 6 * * *": {
-        // Daily PressReader scrape
-        console.log("[cron] Daily scrape:", new Date(controller.scheduledTime).toISOString());
-        const token = await getValidToken(jobEnv.db);
-        if (token) {
-          const client = new PressReaderClient(token, new RateLimiter());
-          await runDailyScrape(jobEnv.db, client, jobEnv);
-        } else {
-          console.error("[cron] No valid auth token. Skipping PressReader scrape.");
-        }
         break;
       }
       default:

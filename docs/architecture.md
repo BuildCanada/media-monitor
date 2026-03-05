@@ -1,6 +1,6 @@
 # Architecture
 
-Media Monitor is a Canadian media monitoring tool with two parallel ingestion pipelines and a unified search layer.
+Media Monitor is a Canadian media monitoring tool with an RSS ingestion pipeline and a unified search layer.
 
 ## System Overview
 
@@ -8,12 +8,10 @@ Media Monitor is a Canadian media monitoring tool with two parallel ingestion pi
 ┌─────────────────────────────────────────────────────────┐
 │                   Cloudflare Workers                     │
 │                                                         │
-│  Cron (6 AM UTC)                                        │
-│    ├─ PressReader Pipeline (scrape newspapers)           │
+│  Cron (every 5 min)                                     │
 │    └─ RSS Pipeline (ingest web articles)                │
 │                                                         │
 │  Queues                                                 │
-│    ├─ scrape-tasks → PressReader task processor          │
 │    └─ rss-process-tasks → RSS task processor             │
 │                                                         │
 │  Bindings                                               │
@@ -32,15 +30,6 @@ Media Monitor is a Canadian media monitoring tool with two parallel ingestion pi
 ```
 
 ## Pipelines
-
-### PressReader Pipeline
-
-Scrapes full newspaper issues (articles, images, sections) from PressReader API.
-
-1. **Orchestrator** fetches calendar for each enabled publication
-2. Creates scrape tasks per (publication, date) pair
-3. **Task processor** downloads articles, images, sections
-4. Stores everything in PostgreSQL (`media_monitor` schema)
 
 ### RSS Pipeline
 
@@ -72,22 +61,18 @@ Hybrid search across all RSS-indexed articles via Turbopuffer:
 
 | Table | Purpose |
 |-------|---------|
-| publications | Newspaper catalog from PressReader |
+| publications | Newspaper catalog |
 | issues | One issue per publication per date |
 | articles | Individual newspaper articles |
 | sections | Newspaper sections |
 | article_authors | Bylines |
 | article_images | Images stored in R2 |
-| article_tags | PressReader classifications |
+| article_tags | Classifications |
 
 ### `media_monitor_private` (internal operations)
 
 | Table | Purpose |
 |-------|---------|
-| scrape_jobs | PressReader scrape job tracking |
-| scrape_tasks | Individual scrape tasks per (pub, date) |
-| auth_sessions | PressReader auth tokens/cookies |
-| publication_sync_log | Catalog sync audit log |
 | rss_feeds | RSS feed URLs and metadata |
 | rss_items | Individual RSS articles + processing state |
 | rss_entities | Extracted entities (NER + topics) |

@@ -46,8 +46,7 @@
 
   "triggers": {
     "crons": [
-      "*/5 * * * *",  // RSS ingest every 5 minutes
-      "0 6 * * *"     // Daily PressReader scrape at 6AM UTC (11PM MST)
+      "*/5 * * * *"  // RSS ingest every 5 minutes
     ]
   },
 

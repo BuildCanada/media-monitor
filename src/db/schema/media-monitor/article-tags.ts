@@ -8,7 +8,6 @@ export const articleTags = mediaMonitor.table("article_tags", {
   articleId: integer("article_id")
     .notNull()
     .references(() => articles.id),
-  pressreaderTagId: integer("pressreader_tag_id"),
   displayName: text("display_name").notNull(),
   weight: real("weight"),
 });

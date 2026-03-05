@@ -156,7 +156,6 @@ media-monitor/
 │   │   ├── api/
 │   │   │   ├── rss/            # RSS feed/item/ingest endpoints
 │   │   │   ├── search/         # Search endpoint
-│   │   │   ├── scrape/         # PressReader scrape endpoints
 │   │   │   └── ...
 │   │   ├── rss/                # RSS management UI pages
 │   │   ├── search/             # Search UI page
@@ -180,8 +179,6 @@ media-monitor/
 │       │   ├── turbopuffer.ts
 │       │   ├── task-processor.ts
 │       │   └── seed-feeds.ts
-│       ├── scraper/            # PressReader pipeline
-│       └── pressreader/        # PressReader API client
 ├── gliner-service/             # GLiNER2 NER container
 │   ├── Dockerfile
 │   └── main.py

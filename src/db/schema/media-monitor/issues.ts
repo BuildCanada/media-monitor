@@ -10,7 +10,6 @@ export const issues = mediaMonitor.table(
     publicationId: integer("publication_id")
       .notNull()
       .references(() => publications.id),
-    pressreaderIssueId: integer("pressreader_issue_id"),
     issueKey: varchar("issue_key", { length: 64 }).notNull(),
     cid: varchar("cid", { length: 32 }).notNull(),
     issueDate: date("issue_date").notNull(),

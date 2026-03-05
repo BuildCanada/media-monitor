@@ -1,4 +1,4 @@
-import { bigint, integer, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { integer, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 import { issues } from "./issues";
 import { mediaMonitor } from "./publications";
@@ -9,7 +9,6 @@ export const articles = mediaMonitor.table("articles", {
   issueId: integer("issue_id")
     .notNull()
     .references(() => issues.id),
-  pressreaderId: bigint("pressreader_id", { mode: "bigint" }),
   title: text("title"),
   subtitle: text("subtitle"),
   byline: text("byline"),

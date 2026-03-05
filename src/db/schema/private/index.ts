@@ -1,9 +1,5 @@
-export { authSessions } from "./auth-sessions";
-export { publicationSyncLog } from "./publication-sync-log";
+export { mediaMonitorPrivate } from "./schema";
 export { rssEntities } from "./rss-entities";
 export { rssFeeds } from "./rss-feeds";
 export { rssIngestJobs } from "./rss-ingest-jobs";
 export { rssItems } from "./rss-items";
-export { mediaMonitorPrivate } from "./scrape-jobs";
-export { scrapeJobs } from "./scrape-jobs";
-export { scrapeTasks } from "./scrape-tasks";

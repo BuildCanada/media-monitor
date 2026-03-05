@@ -1,6 +1,6 @@
 import { boolean, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
-import { mediaMonitorPrivate } from "./scrape-jobs";
+import { mediaMonitorPrivate } from "./schema";
 
 export const rssFeeds = mediaMonitorPrivate.table("rss_feeds", {
   id: serial("id").primaryKey(),

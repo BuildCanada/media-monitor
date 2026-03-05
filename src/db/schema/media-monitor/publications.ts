@@ -4,7 +4,6 @@ export const mediaMonitor = pgSchema("media_monitor");
 
 export const publications = mediaMonitor.table("publications", {
   id: serial("id").primaryKey(),
-  pressreaderId: integer("pressreader_id"),
   cid: varchar("cid", { length: 32 }).notNull().unique(),
   type: varchar("type", { length: 32 }),
   name: text("name").notNull(),

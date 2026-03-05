@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Media Monitor",
-  description: "PressReader newspaper scraper for Build Canada",
+  description: "Media monitoring for Build Canada",
 };
 
 export default function RootLayout({

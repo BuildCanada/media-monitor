@@ -1,6 +1,6 @@
 # Media Monitor
 
-Canadian media monitoring platform. Ingests RSS feeds and scrapes PressReader publications, extracts content, generates embeddings, and provides semantic search.
+Canadian media monitoring platform. Ingests RSS feeds, extracts content, generates embeddings, and provides semantic search.
 
 ## Architecture
 
@@ -59,4 +59,3 @@ npx wrangler secret put TURBOPUFFER_API_KEY --config worker/wrangler.jsonc
 | Schedule | Job |
 |----------|-----|
 | `*/5 * * * *` | RSS feed ingest |
-| `0 6 * * *` | PressReader daily scrape |

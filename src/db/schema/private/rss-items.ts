@@ -1,7 +1,7 @@
 import { integer, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 import { rssFeeds } from "./rss-feeds";
-import { mediaMonitorPrivate } from "./scrape-jobs";
+import { mediaMonitorPrivate } from "./schema";
 
 export const rssItems = mediaMonitorPrivate.table("rss_items", {
   id: serial("id").primaryKey(),

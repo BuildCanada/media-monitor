@@ -1,4 +1,4 @@
-import { bigint, integer, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 import { articles } from "./articles";
 import { mediaMonitor } from "./publications";
@@ -8,7 +8,6 @@ export const articleImages = mediaMonitor.table("article_images", {
   articleId: integer("article_id")
     .notNull()
     .references(() => articles.id),
-  pressreaderImageId: bigint("pressreader_image_id", { mode: "bigint" }),
   originalUrl: text("original_url"),
   r2Key: text("r2_key"),
   width: integer("width"),
