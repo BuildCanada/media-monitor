@@ -17,3 +17,26 @@ fs.mkdirSync(path.join(dest, "esm"), { recursive: true });
 fs.copyFileSync(path.join(src, "esm/index.mjs"), path.join(dest, "esm/index.mjs"));
 
 console.log("[patch] Copied pg-cloudflare workerd files into OpenNext bundle");
+
+// Patch handler.mjs to resolve the Turbopack-hashed pg module name
+const handlerPath = path.resolve(
+  ".open-next/server-functions/default/handler.mjs"
+);
+let handler = fs.readFileSync(handlerPath, "utf8");
+
+// Find the hashed pg module name (pg-<hex>) in the bundle
+const pgHashMatch = handler.match(/\bpg-[a-f0-9]{16}\b/);
+if (pgHashMatch) {
+  const pgHash = pgHashMatch[0];
+  // Add a case to the externalImport switch: hashed name → real "pg" import
+  handler = handler.replace(
+    'case"next/dist/compiled/@vercel/og/index.node.js"',
+    `case"${pgHash}":raw=await import("pg");break;case"next/dist/compiled/@vercel/og/index.node.js"`
+  );
+  fs.writeFileSync(handlerPath, handler);
+  console.log(`[patch] Mapped ${pgHash} → pg in externalImport switch`);
+} else {
+  console.warn(
+    "[patch] No hashed pg module name found — skipping handler patch"
+  );
+}
