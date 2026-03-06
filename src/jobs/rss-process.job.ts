@@ -9,8 +9,9 @@ import { embedTexts } from "@/lib/rss/embedder";
 import { extractEntities } from "@/lib/rss/entity-extractor";
 import { type ArticleChunkVector, upsertChunks } from "@/lib/rss/turbopuffer";
 
+import { MemoMatchJob } from "./memo-match.job";
 import type { Job, JobEnv } from "./runner";
-import { register } from "./runner";
+import { performLater, register } from "./runner";
 
 export const RssProcessJob: Job<{ rssItemId: number; jobId: number }> = {
   type: "rss-process",
@@ -145,6 +146,13 @@ export const RssProcessJob: Job<{ rssItemId: number; jobId: number }> = {
         .update(rssItems)
         .set({ processingStatus: "completed", processedAt: new Date() })
         .where(eq(rssItems.id, rssItemId));
+
+      // Step 9: Queue memo matching (non-blocking — failures don't affect article processing)
+      try {
+        await performLater(env, MemoMatchJob, { rssItemId });
+      } catch (error) {
+        console.error(`[rss-processor] Failed to queue memo match for item ${rssItemId}:`, error);
+      }
 
       console.log(`[rss-processor] Completed item ${rssItemId}: ${item.title}`);
     } catch (error) {

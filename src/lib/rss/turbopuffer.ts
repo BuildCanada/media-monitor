@@ -86,7 +86,7 @@ export async function upsertChunks(
       chunk_text: { type: "string", full_text_search: true },
       author: { type: "string", full_text_search: true },
       title: { type: "string", full_text_search: true },
-      publication: { type: "string", full_text_search: true },
+      publication: { type: "string", full_text_search: true, filterable: true },
     },
   });
 }
