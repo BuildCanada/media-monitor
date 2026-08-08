@@ -1,4 +1,4 @@
-import { and, eq, lt, or } from "drizzle-orm";
+import { and, eq, isNull, lt, lte, or } from "drizzle-orm";
 
 import type { Db } from "@/db";
 import { rssFeeds, rssIngestJobs, rssItems } from "@/db/schema/private";
@@ -6,7 +6,7 @@ import type { JobEnv } from "@/jobs";
 import { performLater } from "@/jobs";
 import { RssProcessJob } from "@/jobs/rss-process.job";
 
-import { fetchFeed } from "./feed-fetcher";
+import { fetchFeed, FeedRateLimitError } from "./feed-fetcher";
 
 const MAX_RETRIES = 3;
 
@@ -54,13 +54,20 @@ export async function runRssIngest(
 ): Promise<{ jobId: number; newItems: number } | null> {
   console.log("[rss-orchestrator] Starting RSS ingest...");
 
+  // Skip feeds that rate limited us and are still inside their Retry-After
+  // window, so a rate-limited publisher is not hit again every cycle.
   const enabledFeeds = await db
     .select()
     .from(rssFeeds)
-    .where(eq(rssFeeds.enabled, true));
+    .where(
+      and(
+        eq(rssFeeds.enabled, true),
+        or(isNull(rssFeeds.retryAfter), lte(rssFeeds.retryAfter, new Date())),
+      ),
+    );
 
   if (enabledFeeds.length === 0) {
-    console.log("[rss-orchestrator] No enabled feeds, skipping.");
+    console.log("[rss-orchestrator] No eligible feeds, skipping.");
     return null;
   }
 
@@ -83,7 +90,7 @@ export async function runRssIngest(
 
         await db
           .update(rssFeeds)
-          .set({ lastFetchedAt: new Date(), lastFetchError: null })
+          .set({ lastFetchedAt: new Date(), lastFetchError: null, retryAfter: null })
           .where(eq(rssFeeds.id, feed.id));
 
         for (const item of items) {
@@ -117,6 +124,24 @@ export async function runRssIngest(
           totalNewItems++;
         }
       } catch (error) {
+        // A rate limit is expected backpressure, not an error. Record the
+        // publisher's requested wait and skip the feed until it passes.
+        if (error instanceof FeedRateLimitError) {
+          const retryAfter = new Date(Date.now() + error.retryAfterMs);
+          console.warn(
+            `[rss-orchestrator] Rate limited by ${feed.feedUrl}; skipping until ${retryAfter.toISOString()}`,
+          );
+          try {
+            await db
+              .update(rssFeeds)
+              .set({ lastFetchError: error.message, retryAfter })
+              .where(eq(rssFeeds.id, feed.id));
+          } catch (updateError) {
+            console.error(`[rss-orchestrator] Failed to record rate limit:`, updateError);
+          }
+          continue;
+        }
+
         console.error(`[rss-orchestrator] Error fetching feed ${feed.feedUrl}:`, error);
         try {
           await db

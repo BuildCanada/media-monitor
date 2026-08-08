@@ -1,0 +1,1 @@
+ALTER TABLE "media_monitor_private"."rss_feeds" ADD COLUMN "retry_after" timestamp;
